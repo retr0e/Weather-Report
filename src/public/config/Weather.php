@@ -3,10 +3,6 @@
 use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
 
-//zajmuje się jednym zadaniem - 
-//objekt interface - builder
-//rozbić na podstawie wzorców
-//do api po tokenie - uzery i tokeny
 class Weather {
     public $weatherReport;
     public $errors;
@@ -29,8 +25,21 @@ class Weather {
         $weatherData = file_get_contents($url);
         $weatherData = json_decode($weatherData, true);
 
+        require('Time.php');
+        $time = new Time();
+        $time->setTime([
+            'date' => $weatherData['dt'],
+            'sunrise' => $weatherData['sys']['sunrise'],
+            'sunset' => $weatherData['sys']['sunset']
+        ]);
+
+        $iconUrl = $_ENV['weather_api_icons'] . $weatherData['weather'][0]['icon'] . "@2x.png";
+
         $this->weatherReport = [
+            'time' => $time->getTime(),
             'temperature' => $weatherData['main']['temp'],
+            'humidity' => $weatherData['main']['humidity'],
+            'icon' => $iconUrl,
             'shortDescr' => $weatherData['weather'][0]['main'],
             'description' => $weatherData['weather'][0]['description'],
             'windType' => $weatherData['wind']['deg'],

@@ -13,13 +13,13 @@ const Widget = ({ definedLocation }) => {
   const configTheMode = (fulfilledData) => {
     if (fulfilledData) {
       const localHour = parseInt(
-        `${fulfilledData[1]["date"][11]}${fulfilledData[1]["date"][12]}`,
+        `${fulfilledData["weather"]["time"][11]}${fulfilledData["weather"]["time"][12]}`,
         10
       );
-      const [time, period] = fulfilledData[1]["sunset"].split(" ");
+      const [time, period] = fulfilledData["weather"]["time"]["sunset"].split(" ");
       const [hours, minutes] = time.split(":");
 
-      const [sunriseTime, sunrisePeriod] = fulfilledData[1]["sunrise"].split(" ");
+      const [sunriseTime, sunrisePeriod] = fulfilledData["weather"]["time"]["sunrise"].split(" ");
       const [sunriseHours, sunriseMinutes] = sunriseTime.split(":");
 
       let fullClockTimeHour = parseInt(hours, 10);
@@ -45,7 +45,7 @@ const Widget = ({ definedLocation }) => {
         setLocationData(ipResponse.data.city);
 
         const weatherResponse = await axios.get(
-          `http://localhost:8000/weather/${ipResponse.data.city}`
+          `http://localhost:8000/weather?city=${ipResponse.data.city}&key=aa6a113ae504744aef66bb753e6df46b`
         );
         const fetchedWeatherData = weatherResponse.data;
         setWeatherData(fetchedWeatherData);
@@ -64,7 +64,7 @@ const Widget = ({ definedLocation }) => {
       const fetchWeatherForDefinedLocation = async () => {
         try {
           const weatherResponse = await axios.get(
-            `http://localhost:8000/weather/${definedLocation}`
+            `http://localhost:8000/weather?city=${definedLocation}&key=aa6a113ae504744aef66bb753e6df46b`
           );
           const fetchedWeatherData = weatherResponse.data;
           setWeatherData(fetchedWeatherData);
@@ -86,28 +86,28 @@ const Widget = ({ definedLocation }) => {
 
         {weatherData ? (
           <img
-            src={`https:${weatherData[1]["icon"]}`}
+            src={`https:${weatherData["weather"]["icon"]}`}
             alt='Weather Icon'
             className='moon'
           />
         ) : null}
 
         <div className='temperature'>
-          {weatherData ? weatherData[1]["temperature"] : "Loading..."}°C
+          {weatherData ? weatherData["weather"]["temperature"] : "Loading..."}°C
         </div>
-        <div className='weather'>{weatherData ? weatherData.weather : "Loading..."}</div>
+        <div className='weather'>{weatherData ? weatherData["weather"]["shortDescr"] : "Loading..."}</div>
         <div className='condition'>
-          {weatherData ? weatherData[1]["condition"] : "Loading..."}
+          {weatherData ? weatherData["weather"]["description"] : "Loading..."}
         </div>
         <div className='windType'>
-          {weatherData ? weatherData[1]["windType"] : "Loading..."}
+          {weatherData ? weatherData["weather"]["windType"] : "Loading..."}
         </div>
         <div className='windSpeed'>
-          {weatherData ? weatherData[1]["windSpeed"] : "Loading..."} km/h
+          {weatherData ? weatherData["weather"]["windSpeed"] : "Loading..."} km/h
         </div>
 
         <div className='humidity'>
-          {weatherData ? `Humidity ${weatherData[1]["humidity"]}%` : "Loading..."}
+          {weatherData ? `Humidity ${weatherData["weather"]["humidity"]}%` : "Loading..."}
         </div>
       </div>
     </>

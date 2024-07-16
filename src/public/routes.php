@@ -5,6 +5,7 @@ use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
+use App\Middleware\CorsMiddleware;
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -56,7 +57,11 @@ $app->get('/weather', function (Request $request, Response $response, $args) use
     }
 
     $response->getBody()->write(json_encode($data));
-    return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+    return $response
+            ->withHeader('Access-Control-Allow-Origin', '*')
+            ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
+            ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
+            ->withHeader('Content-Type', 'application/json')->withStatus(200);
 });
 
 $app->get('/weather/page', function (Request $request, Response $response, $args) use ($twig, $app, $entityManager) {

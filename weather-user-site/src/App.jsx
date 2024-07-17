@@ -1,11 +1,11 @@
 /* eslint-disable no-unused-vars */
-import { useState } from "react";
-import Widget from "./components/Widget.jsx";
-import "./App.css";
+import { useState } from 'react';
+import Widget from './components/Widget.jsx';
+import './App.css';
 
 function App() {
-  const [inputValue, setInputValue] = useState("");
-  const [location, setLocation] = useState("");
+  const [inputValue, setInputValue] = useState('');
+  const [location, setLocation] = useState('');
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
@@ -13,7 +13,7 @@ function App() {
   };
 
   return (
-    <div>
+    <div className='main'>
       <Widget definedLocation={location} />
 
       <form onSubmit={handleFormSubmit}>

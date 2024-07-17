@@ -115,3 +115,24 @@ body {
   text-align: center;
   margin: 60px 0px 60px 0px;
 }
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.map-container {
+  width: 250px;
+  height: 320px;
+  border-radius: 35px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+.map-container {
+  width: 250px;
+  height: 320px;
+  border-radius: 35px;
+  overflow: hidden;
+}

@@ -3,7 +3,9 @@
 import './Widget.css';
 import axios from 'axios';
 import { useState, useEffect } from 'react';
+import Map from './Map';
 
+// For creating reasons
 const fakeData = {
   weather: {
     icon: 'bad',
@@ -13,6 +15,8 @@ const fakeData = {
     windType: 'NW',
     windSpeed: 8.3,
     humidity: 83,
+    latitude: 50.4639,
+    longitude: 17.0065,
   },
 };
 
@@ -93,7 +97,7 @@ const Widget = ({ definedLocation }) => {
   }, [definedLocation, fetchingData]);
 
   return (
-    <>
+    <div className='container'>
       {weatherData ? (
         <>
           <div className={mode ? 'weather-widget-bright' : 'weather-widget'}>
@@ -120,17 +124,22 @@ const Widget = ({ definedLocation }) => {
               {`Humidity ${weatherData['weather']['humidity']}%`}
             </div>
           </div>
-        </>
-      ) : (
-        <>
-          <div className='waiting-widget'>
-            <h1 className='waiting-message'>
-              Please wait while we fetch all the necessary information... 😊
-            </h1>
+
+          <div className='map-container'>
+            <Map
+              latitude={weatherData.weather.latitude}
+              longitude={weatherData.weather.longitude}
+            />
           </div>
         </>
+      ) : (
+        <div className='waiting-widget'>
+          <h1 className='waiting-message'>
+            Please wait while we fetch all the necessary information... 😊
+          </h1>
+        </div>
       )}
-    </>
+    </div>
   );
 };
 

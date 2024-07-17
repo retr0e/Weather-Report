@@ -1,5 +1,5 @@
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
 }
 
 .weather-widget {
@@ -94,26 +94,23 @@ body {
 }
 
 .waiting-widget {
-  position: relative;
   display: flex;
-  /* color: rgba(150, 145, 145, 0.871); */
-  color: white;
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
-  font-size: 9px;
-  width: 250px;
-  height: 320px;
+  justify-content: center;
+  align-items: center;
+  width: 290px;
+  height: 404px;
   border-radius: 35px;
-  padding-top: 20px;
-  padding-left: 20px;
-  padding-right: 20px;
-  padding-bottom: 5px;
   background: linear-gradient(to bottom, #ffffff, #919090, #96b1cf);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  color: white;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  font-size: 8px;
 }
 
 .waiting-message {
   text-align: center;
-  margin: 60px 0px 60px 0px;
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
 .container {

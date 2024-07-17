@@ -22,7 +22,7 @@ const fakeData = {
 
 const Widget = ({ definedLocation }) => {
   const [locationData, setLocationData] = useState('');
-  const [weatherData, setWeatherData] = useState(fakeData);
+  const [weatherData, setWeatherData] = useState(null);
   const [fetchingData, setFetchingData] = useState(true);
   const [mode, setMode] = useState(true);
 

@@ -1,32 +1,45 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
-import "./Widget.css";
-import axios from "axios";
-import { useState, useEffect } from "react";
+import './Widget.css';
+import axios from 'axios';
+import { useState, useEffect } from 'react';
+
+const fakeData = {
+  weather: {
+    icon: 'bad',
+    temperature: 20.9,
+    shorDescr: 'Cloudy with Sun',
+    description: 'Feels warm',
+    windType: 'NW',
+    windSpeed: 8.3,
+    humidity: 83,
+  },
+};
 
 const Widget = ({ definedLocation }) => {
-  const [locationData, setLocationData] = useState("");
-  const [weatherData, setWeatherData] = useState(null);
+  const [locationData, setLocationData] = useState('');
+  const [weatherData, setWeatherData] = useState(fakeData);
   const [fetchingData, setFetchingData] = useState(true);
   const [mode, setMode] = useState(true);
 
   const configTheMode = (fulfilledData) => {
     if (fulfilledData) {
       const localHour = parseInt(
-        `${fulfilledData["weather"]["time"][11]}${fulfilledData["weather"]["time"][12]}`,
+        `${fulfilledData['weather']['time'][11]}${fulfilledData['weather']['time'][12]}`,
         10
       );
-      const [time, period] = fulfilledData["weather"]["time"]["sunset"].split(" ");
-      const [hours, minutes] = time.split(":");
+      const [time, period] = fulfilledData['weather']['time']['sunset'].split(' ');
+      const [hours, minutes] = time.split(':');
 
-      const [sunriseTime, sunrisePeriod] = fulfilledData["weather"]["time"]["sunrise"].split(" ");
-      const [sunriseHours, sunriseMinutes] = sunriseTime.split(":");
+      const [sunriseTime, sunrisePeriod] =
+        fulfilledData['weather']['time']['sunrise'].split(' ');
+      const [sunriseHours, sunriseMinutes] = sunriseTime.split(':');
 
       let fullClockTimeHour = parseInt(hours, 10);
 
-      if (period === "PM" && fullClockTimeHour !== 12) {
+      if (period === 'PM' && fullClockTimeHour !== 12) {
         fullClockTimeHour += 12;
-      } else if (period === "AM" && fullClockTimeHour === 12) {
+      } else if (period === 'AM' && fullClockTimeHour === 12) {
         fullClockTimeHour = 0;
       }
 
@@ -41,7 +54,7 @@ const Widget = ({ definedLocation }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const ipResponse = await axios.get("https://ipapi.co/json/");
+        const ipResponse = await axios.get('https://ipapi.co/json/');
         setLocationData(ipResponse.data.city);
 
         const weatherResponse = await axios.get(
@@ -52,7 +65,7 @@ const Widget = ({ definedLocation }) => {
         setFetchingData(false);
         configTheMode(fetchedWeatherData);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error('Error fetching data:', error);
       }
     };
 
@@ -70,7 +83,7 @@ const Widget = ({ definedLocation }) => {
           setWeatherData(fetchedWeatherData);
           configTheMode(fetchedWeatherData);
         } catch (error) {
-          console.error("Error fetching weather data:", error);
+          console.error('Error fetching weather data:', error);
         }
       };
 
@@ -81,35 +94,42 @@ const Widget = ({ definedLocation }) => {
 
   return (
     <>
-      <div className={mode ? "weather-widget-bright" : "weather-widget"}>
-        <div className='location'>{locationData ? locationData : "Loading..."}</div>
+      {weatherData ? (
+        <>
+          <div className={mode ? 'weather-widget-bright' : 'weather-widget'}>
+            <div className='location'>{locationData ? locationData : 'Loading...'}</div>
 
-        {weatherData ? (
-          <img
-            src={`https:${weatherData["weather"]["icon"]}`}
-            alt='Weather Icon'
-            className='moon'
-          />
-        ) : null}
+            <img
+              src={`https:${weatherData['weather']['icon']}`}
+              alt='Weather Icon'
+              className='moon'
+            />
 
-        <div className='temperature'>
-          {weatherData ? weatherData["weather"]["temperature"] : "Loading..."}°C
-        </div>
-        <div className='weather'>{weatherData ? weatherData["weather"]["shortDescr"] : "Loading..."}</div>
-        <div className='condition'>
-          {weatherData ? weatherData["weather"]["description"] : "Loading..."}
-        </div>
-        <div className='windType'>
-          {weatherData ? weatherData["weather"]["windType"] : "Loading..."}
-        </div>
-        <div className='windSpeed'>
-          {weatherData ? weatherData["weather"]["windSpeed"] : "Loading..."} km/h
-        </div>
+            <div className='temperature'>{weatherData['weather']['temperature']}°C</div>
+            <div className='weather'>{weatherData['weather']['shortDescr']}</div>
+            <div className='condition'>{weatherData['weather']['description']}</div>
 
-        <div className='humidity'>
-          {weatherData ? `Humidity ${weatherData["weather"]["humidity"]}%` : "Loading..."}
-        </div>
-      </div>
+            <div className='windSection'>
+              <span className='windDesc'>Wind type:</span>
+              <div className='windType'>{weatherData['weather']['windType']}</div>
+              <span className='windDesc'>Wind speed:</span>
+              <div className='windSpeed'>{weatherData['weather']['windSpeed']} km/h</div>
+            </div>
+
+            <div className='humidity'>
+              {`Humidity ${weatherData['weather']['humidity']}%`}
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className='waiting-widget'>
+            <h1 className='waiting-message'>
+              Please wait while we fetch all the necessary information... 😊
+            </h1>
+          </div>
+        </>
+      )}
     </>
   );
 };

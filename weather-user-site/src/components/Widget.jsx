@@ -62,8 +62,13 @@ const Widget = ({ definedLocation }) => {
         setLocationData(ipResponse.data.city);
 
         const weatherResponse = await axios.get(
-          `http://localhost:8000/weather?city=${ipResponse.data.city}&key=aa6a113ae504744aef66bb753e6df46b`
-        );
+          `http://localhost:8000/weather?city=${ipResponse.data.city}`,
+          {
+            headers: {
+              'Authorization': 'aa6a113ae504744aef66bb753e6df46b',
+            }
+          }
+        );        
         const fetchedWeatherData = weatherResponse.data;
         setWeatherData(fetchedWeatherData);
         setFetchingData(false);
@@ -81,7 +86,12 @@ const Widget = ({ definedLocation }) => {
       const fetchWeatherForDefinedLocation = async () => {
         try {
           const weatherResponse = await axios.get(
-            `http://localhost:8000/weather?city=${definedLocation}&key=aa6a113ae504744aef66bb753e6df46b`
+            `http://localhost:8000/weather?city=${definedLocation}`,
+            {
+              headers: {
+                'Authorization': 'aa6a113ae504744aef66bb753e6df46b',
+              }
+            }
           );
           const fetchedWeatherData = weatherResponse.data;
           setWeatherData(fetchedWeatherData);
@@ -127,8 +137,8 @@ const Widget = ({ definedLocation }) => {
 
           <div className='map-container'>
             <Map
-              latitude={weatherData.weather.latitude}
-              longitude={weatherData.weather.longitude}
+              latitude={weatherData['location']['latitude']}
+              longitude={weatherData['location']['longitude']}
             />
           </div>
         </>

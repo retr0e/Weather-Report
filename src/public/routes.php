@@ -5,6 +5,8 @@ use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Server\RequestHandlerInterface as Handler;
+
 use App\Middleware\CorsMiddleware;
 
 require __DIR__ . '/../vendor/autoload.php';
@@ -22,9 +24,41 @@ $twig = Twig::create('templates/', ['cache' => false]);
 $app = AppFactory::create();
 $app->add(TwigMiddleware::create($app, $twig));
 
+$app->add(function (Request $request, Handler $handler) use ($app): Response {
+    if ($request->getMethod() === 'OPTIONS') {
+        $response = $app->getResponseFactory()->createResponse();
+    } else {
+        $response = $handler->handle($request);
+    }
+
+    $response = $response
+        ->withHeader('Access-Control-Allow-Credentials', 'true')
+        ->withHeader('Access-Control-Allow-Origin', '*')
+        ->withHeader('Access-Control-Allow-Headers', '*')
+        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
+        ->withHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+        ->withHeader('Pragma', 'no-cache');
+
+    if (ob_get_contents()) {
+        ob_clean();
+    }
+
+    return $response;
+});
+
+$app->options('*', function (Request $request, Response $response, $args) use ($app) {
+    return $response;
+});
+
 $app->get('/weather', function (Request $request, Response $response, $args) use ($twig, $app, $entityManager) {
+    $headers = getallheaders();
+    $key = '';
+    
+    if (isset($headers['Authorization'])) {
+        $key = $headers['Authorization'];
+    }
+
     $city = $request->getQueryParams()['city'] ?? null;
-    $key = $request->getQueryParams()['key'] ?? null;
 
     $database = new Database($entityManager);
     $user = $database->findUserByToken($key);
@@ -33,9 +67,9 @@ $app->get('/weather', function (Request $request, Response $response, $args) use
         $data = [
             'message' => "Incorrect key"
         ];
-  
+
         $response->getBody()->write(json_encode($data));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+        return $response;
     }
 
     $location = new UserLocation();
@@ -55,47 +89,9 @@ $app->get('/weather', function (Request $request, Response $response, $args) use
     else {
         $data = $weather->getWeatherReport();
     }
-
+    
     $response->getBody()->write(json_encode($data));
-    return $response
-            ->withHeader('Access-Control-Allow-Origin', '*')
-            ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
-            ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
-            ->withHeader('Content-Type', 'application/json')->withStatus(200);
-});
-
-$app->get('/weather/page', function (Request $request, Response $response, $args) use ($twig, $app, $entityManager) {
-    $ip = new UserIp();
-    $location = new UserLocation();
-    $weather = new Weather();
-
-    $ip->setUserIp();
-    $location->setUserLocationByIp($ip->getUserIp());
-    $weather->setWeatherReport($location->getUserLocation());
-
-    $weatherReport = $weather->getWeatherReport();
-    $userLocation = $location->getUserLocation();
-
-    if ($userLocation) {
-        $data = [
-            'location' => $userLocation,
-            'weather' => $weatherReport
-        ];
-
-        $database = new Database($entityManager);
-        $database->saveRecordToDatabase($data);
-    }
-
-    $view = Twig::fromRequest($request);
-    return $view->render($response, 'weatherReport.html', [
-        'temperature' => $weatherReport['temperature'], 
-        'description' => $weatherReport['description'],
-        'windType' => $weatherReport['windType'],
-        'windSpeed' => $weatherReport['windSpeed'],
-        'cityName' => $userLocation['city'], 
-        'longitude' => $userLocation['longitude'],
-        'latitude' => $userLocation['latitude']
-    ]);
+    return $response;
 });
 
 $app->get('/register', function (Request $request, Response $response, $args) use ($twig, $app) {

@@ -1,49 +1,159 @@
 <script setup>
-import { ref } from 'vue';
+const fakeData = {
+  location: {
+    city: 'London',
+    longitude: '-0.128',
+    latitude: '51.507',
+  },
+  weather: {
+    time: {
+      date: '2024-07-17 10:08:16',
+      sunrise: '4:03 AM',
+      sunset: '8:09 PM',
+    },
+    temperature: 20.57,
+    humidity: 62,
+    icon: 'https://openweathermap.org/img/wn/02d@2x.png',
+    shortDescr: 'Clouds',
+    description: 'few clouds',
+    windType: 'NW',
+    windSpeed: 3.09,
+  },
+};
+
+import { ref, watch } from 'vue';
+import axios from 'axios';
+const weatherInformation = ref(fakeData);
+const inputLocation = ref('');
+const location = ref('Nysa');
+const isLoading = ref(true);
+const nightMode = ref(false);
+const errorMessage = ref('');
+
+const configTheMode = () => {
+  if (weatherInformation) {
+    const localHour = parseInt(
+      `${weatherInformation['weather']['time'][11]}${weatherInformation['weather']['time'][12]}`,
+      10
+    );
+    const [time, period] = weatherInformation['weather']['time']['sunset'].split(' ');
+    const [hours, minutes] = time.split(':');
+
+    const [sunriseTime, sunrisePeriod] =
+      weatherInformation['weather']['time']['sunrise'].split(' ');
+    const [sunriseHours, sunriseMinutes] = sunriseTime.split(':');
+
+    let fullClockTimeHour = parseInt(hours, 10);
+
+    if (period === 'PM' && fullClockTimeHour !== 12) {
+      fullClockTimeHour += 12;
+    } else if (period === 'AM' && fullClockTimeHour === 12) {
+      fullClockTimeHour = 0;
+    }
+
+    if (localHour > fullClockTimeHour || localHour < parseInt(sunriseHours, 10)) {
+      nightMode.value = false;
+    } else {
+      nightMode.value = true;
+    }
+  }
+};
+
+function handleFormSubmit(e) {
+  e.preventDefault();
+  location.value = inputLocation.value;
+}
+
+async function collectWeatherData() {
+  try {
+    isLoading.value = true;
+
+    const response = await axios.get(`http://localhost:8000/weather?city=${location}`, {
+      headers: {
+        Authorization: 'aa6a113ae504744aef66bb753e6df46b',
+      },
+    });
+    const responseData = await response.json();
+    weatherInformation.value = responseData;
+  } catch (e) {
+    console.error('Error Occured!');
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+watch(location, () => {
+  weatherInformation.value = undefined;
+  collectWeatherData();
+});
+
+watch(weatherInformation, () => {
+  if (weatherInformation['weather']) {
+    configTheMode();
+  } else if (weatherInformation['message']) {
+    errorMessage.value = weatherInformation['message'];
+  }
+});
 </script>
 
 <template>
-  <div class="container">
-    <div class="weather-widget-bright">
-      <div class="location">LocationData</div>
+  <main>
+    <form @submit="handleFormSubmit">
+      <input type="text" v-model="inputLocation" />
+      <button type="submit">Submit</button>
+    </form>
 
-      <img
-        src="https://as2.ftcdn.net/v2/jpg/01/17/28/51/1000_F_117285131_W2qjuUEEBPP2nPJHxosDk62mj4B6KvIg.jpg"
-        alt="Weather Icon"
-        className="moon"
-      />
+    <div class="container">
+      <div
+        v-if="weatherInformation"
+        :class="{ 'weather-widget-bright': !nightMode, 'weather-widget': nightMode }"
+      >
+        <div class="location">{{ location }}</div>
 
-      <div class="temperature">Temperatura°C</div>
-      <div class="weather">Opis</div>
-      <div class="condition">Warunki atmo</div>
+        <img
+          :src="weatherInformation['weather']['icon']"
+          alt="Weather Icon"
+          className="sun"
+        />
 
-      <div class="windSection">
-        <span class="windDesc">Wind type</span>
-        <div class="windType">Wind Type Value</div>
-        <span class="windDesc">Wind speed</span>
-        <div class="windSpeed">Wind Speed Value km/h</div>
+        <div class="weather">{{ weatherInformation['weather']['shortDescr'] }}</div>
+        <div class="temperature">
+          {{ weatherInformation['weather']['temperature'] }}°C
+        </div>
+        <div class="condition">{{ weatherInformation['weather']['description'] }}</div>
+
+        <div class="windSection">
+          <span class="windDesc">Wind type</span>
+          <div class="windType">{{ weatherInformation['weather']['windType'] }}</div>
+          <span class="windDesc">Wind speed</span>
+          <div class="windSpeed">
+            {{ weatherInformation['weather']['windSpeed'] }} km/h
+          </div>
+        </div>
+
+        <div class="humidity">
+          Humidity {{ weatherInformation['weather']['humidity'] }} %
+        </div>
       </div>
 
-      <div class="humidity">Humidity %</div>
-    </div>
+      <div v-else className="waiting-widget">
+        <h1 className="waiting-message">
+          Please wait while we fetch all the necessary information... 😊
+        </h1>
+      </div>
 
-    <!-- <div className='map-container'>
+      <!-- <div className='map-container'>
             <Map
               latitude={weatherData['location']['latitude']}
               longitude={weatherData['location']['longitude']}
             />
           </div> -->
-
-    <!-- <div className="waiting-widget">
-      <h1 className="waiting-message">
-        Please wait while we fetch all the necessary information... 😊
-      </h1>
-    </div> -->
-  </div>
+    </div>
+  </main>
 </template>
 
 <style scoped>
-body {
+main {
   font-family: Verdana, Geneva, Tahoma, sans-serif;
 }
 
@@ -95,7 +205,13 @@ body {
   height: 80px;
 }
 
+.weather {
+  font-size: 14px;
+  font-weight: bold;
+}
+
 .condition {
+  font-size: 20px;
   text-align: center;
 }
 
@@ -144,7 +260,7 @@ body {
   justify-content: center;
   align-items: center;
   width: 290px;
-  height: 404px;
+  height: 450px;
   border-radius: 35px;
   background: linear-gradient(to bottom, #ffffff, #919090, #96b1cf);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
@@ -178,5 +294,28 @@ body {
   height: 320px;
   border-radius: 35px;
   overflow: hidden;
+}
+
+form {
+  margin-top: 30px;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+input {
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-right: 10px;
+  flex: 1;
 }
 </style>
